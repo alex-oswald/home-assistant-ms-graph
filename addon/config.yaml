@@ -10,6 +10,6 @@ arch:
   - armv7
   - i386
 ports:
-  7200/tcp: 8080
+  8080/tcp: 7200
 ingress: true
 ingress_port: 7200
