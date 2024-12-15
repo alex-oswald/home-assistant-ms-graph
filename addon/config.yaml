@@ -1,6 +1,6 @@
 name: "M365 Calendar"
 description: "Display your Microsoft365 Calendar in Home Assistant using the Microsoft Graph API"
-version: "0.0.2"
+version: "0.0.3"
 slug: "home_assistant_ms_graph"
 init: false
 arch:
