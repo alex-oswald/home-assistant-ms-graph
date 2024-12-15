@@ -1,0 +1,1 @@
+FROM ghcr.io/alex-oswald/home-assistant-ms-graph:main-dev
