@@ -1,5 +1,5 @@
-name: "Home Assistant Microsoft Graph Add-on"
-description: "My first real add-on!"
+name: "Microsoft Graph Calendar"
+description: "Display your Microsoft Graph Calendar in Home Assistant"
 version: "0.0.1"
 slug: "home_assistant_ms_graph"
 init: false
@@ -9,3 +9,5 @@ arch:
   - armhf
   - armv7
   - i386
+ports:
+  8080/tcp: 8080
