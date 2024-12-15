@@ -1,5 +1,5 @@
-name: "Microsoft Graph Calendar"
-description: "Display your Microsoft Graph Calendar in Home Assistant"
+name: "M365 Calendar"
+description: "Display your Microsoft365 Calendar in Home Assistant using the Microsoft Graph API"
 version: "0.0.2"
 slug: "home_assistant_ms_graph"
 init: false
@@ -10,6 +10,6 @@ arch:
   - armv7
   - i386
 ports:
-  8080/tcp: 8080
+  7200/tcp: 8080
 ingress: true
-ingress_port: 8080
+ingress_port: 7200
