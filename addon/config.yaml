@@ -1,6 +1,6 @@
 name: "Microsoft Graph Calendar"
 description: "Display your Microsoft Graph Calendar in Home Assistant"
-version: "0.0.1"
+version: "0.0.2"
 slug: "home_assistant_ms_graph"
 init: false
 arch:
