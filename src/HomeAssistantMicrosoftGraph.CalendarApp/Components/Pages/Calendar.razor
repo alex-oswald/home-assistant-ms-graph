@@ -1,0 +1,19 @@
+﻿@page "/calendar"
+@attribute [StreamRendering]
+@inject GraphServiceClient GraphServiceClient
+
+<PageTitle>Calendar</PageTitle>
+
+<h1>Calendar - @name</h1>
+
+@code {
+    private string name = "empty";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var me = await GraphServiceClient.Me.GetAsync();
+        name = me.DisplayName;
+        base.OnInitialized();
+    }
+
+}

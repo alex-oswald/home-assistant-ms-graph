@@ -1,5 +1,6 @@
-using HomeAssistantMicrosoftGraph.CalendarApp.Client.Pages;
+using HomeAssistantMicrosoftGraph.CalendarApp;
 using HomeAssistantMicrosoftGraph.CalendarApp.Components;
+using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,6 +8,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
+
+builder.Services.AddGraphServiceClient();
+
+builder.Services.AddMudServices();
 
 var app = builder.Build();
 
