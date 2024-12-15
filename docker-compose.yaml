@@ -1,0 +1,7 @@
+services:
+  home_assistant_ms_graph:
+    build: 
+      context: .
+      dockerfile: src/HomeAssistantMicrosoftGraph.CalendarApp/Dockerfile
+    ports:
+      - 6180:8080

@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.12.35527.113 d17.12
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HomeAssistantMicrosoftGraph.CalendarApp", "src\HomeAssistantMicrosoftGraph.CalendarApp\HomeAssistantMicrosoftGraph.CalendarApp\HomeAssistantMicrosoftGraph.CalendarApp.csproj", "{B4299E66-C310-4140-B9C3-7FD3A30BE592}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HomeAssistantMicrosoftGraph.CalendarApp", "src\HomeAssistantMicrosoftGraph.CalendarApp\HomeAssistantMicrosoftGraph.CalendarApp.csproj", "{B4299E66-C310-4140-B9C3-7FD3A30BE592}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HomeAssistantMicrosoftGraph.CalendarApp.Client", "src\HomeAssistantMicrosoftGraph.CalendarApp\HomeAssistantMicrosoftGraph.CalendarApp.Client\HomeAssistantMicrosoftGraph.CalendarApp.Client.csproj", "{61208FE2-62F8-4AE9-BE6D-AA93614A0269}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HomeAssistantMicrosoftGraph.CalendarApp.Client", "src\HomeAssistantMicrosoftGraph.CalendarApp.Client\HomeAssistantMicrosoftGraph.CalendarApp.Client.csproj", "{61208FE2-62F8-4AE9-BE6D-AA93614A0269}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

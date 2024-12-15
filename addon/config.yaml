@@ -1,6 +1,6 @@
 name: "Home Assistant Microsoft Graph Add-on"
 description: "My first real add-on!"
-version: "1.0.0"
+version: "0.0.1"
 slug: "home_assistant_ms_graph"
 init: false
 arch:
