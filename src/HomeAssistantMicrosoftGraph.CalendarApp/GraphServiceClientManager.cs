@@ -67,28 +67,25 @@ public class GraphServiceClientManager : IGraphServiceClientManager
         var scopes = new[] { "User.Read", "Calendars.Read" };
         var tenantId = "common";
 
-        AuthenticationRecord? currentAuthenticationRecord = await ReadPersistedAuthenticationRecordAsync(cancellationToken).ConfigureAwait(false);
-        var options = new DeviceCodeCredentialOptions
+        AuthenticationRecord? authRecord = await ReadPersistedAuthenticationRecordAsync(cancellationToken).ConfigureAwait(false);
+
+        DeviceCodeCredentialOptions options = new()
         {
             AuthorityHost = AzureAuthorityHosts.AzurePublicCloud,
             ClientId = _options.EntraIdApplicationClientId,
             TenantId = tenantId,
-            // Callback delegate that receives the device code details
             DeviceCodeCallback = DeviceCodeCallback,
+            AuthenticationRecord = authRecord,
+            TokenCachePersistenceOptions = TokenCachePersistenceOptions,
         };
 
-        var deviceCodeCredential = new DeviceCodeCredential(options);
+        DeviceCodeCredential deviceCodeCredential = new(options);
 
-        if (currentAuthenticationRecord is not null)
+        if (authRecord is null)
         {
-            options.AuthenticationRecord = currentAuthenticationRecord;
-            options.TokenCachePersistenceOptions = TokenCachePersistenceOptions;
-        }
-        else
-        {
-            var newAuthenticationRecord = await deviceCodeCredential.AuthenticateAsync(
+            authRecord = await deviceCodeCredential.AuthenticateAsync(
                 new TokenRequestContext(scopes), cancellationToken).ConfigureAwait(false);
-            await PersistAuthenticationRecordAsync(newAuthenticationRecord, cancellationToken).ConfigureAwait(false);
+            await PersistAuthenticationRecordAsync(authRecord, cancellationToken).ConfigureAwait(false);
         }
 
         var graphClient = new GraphServiceClient(deviceCodeCredential);
