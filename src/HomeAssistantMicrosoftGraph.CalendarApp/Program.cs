@@ -6,9 +6,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents()
-    .AddInteractiveWebAssemblyComponents();
+    .AddInteractiveServerComponents();
 
+builder.Services.Configure<GraphServiceClientManagerOptions>(
+    builder.Configuration.GetSection(GraphServiceClientManagerOptions.Section));
 builder.Services.AddGraphServiceClient();
 
 builder.Services.AddMudServices();
@@ -16,22 +17,15 @@ builder.Services.AddMudServices();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseWebAssemblyDebugging();
-}
-else
+if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
 }
-
 
 app.UseAntiforgery();
 
 app.MapStaticAssets();
 app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode()
-    .AddInteractiveWebAssemblyRenderMode()
-    .AddAdditionalAssemblies(typeof(HomeAssistantMicrosoftGraph.CalendarApp.Client._Imports).Assembly);
+    .AddInteractiveServerRenderMode();
 
 app.Run();

@@ -12,7 +12,6 @@ FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["src/HomeAssistantMicrosoftGraph.CalendarApp/HomeAssistantMicrosoftGraph.CalendarApp.csproj", "src/HomeAssistantMicrosoftGraph.CalendarApp/"]
-COPY ["src/HomeAssistantMicrosoftGraph.CalendarApp.Client/HomeAssistantMicrosoftGraph.CalendarApp.Client.csproj", "src/HomeAssistantMicrosoftGraph.CalendarApp.Client/"]
 RUN dotnet restore "./src/HomeAssistantMicrosoftGraph.CalendarApp/HomeAssistantMicrosoftGraph.CalendarApp.csproj"
 COPY . .
 WORKDIR "/src/src/HomeAssistantMicrosoftGraph.CalendarApp"

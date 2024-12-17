@@ -1,19 +1,51 @@
 ﻿@page "/calendar"
+@using System.Text
 @attribute [StreamRendering]
-@inject GraphServiceClient GraphServiceClient
+@implements IDisposable
+@inject IGraphServiceClientManager GraphServiceClientManager
+@inject ILogger<Calendar> Logger
 
 <PageTitle>Calendar</PageTitle>
 
 <h1>Calendar - @name</h1>
 
+<h4>@message</h4>
+
 @code {
     private string name = "empty";
+    private string message = string.Empty;
+
+    [Inject] private IDialogService DialogService { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        var me = await GraphServiceClient.Me.GetAsync();
-        name = me.DisplayName;
         base.OnInitialized();
+
+        Logger.LogInformation("init");
+        GraphServiceClientManager.OnDeviceCodeCallback += OnDeviceCodeCallback;
+
+        var me = await GraphServiceClientManager.Client.Me.GetAsync();
+        name = me.DisplayName;
+        var calendars = await GraphServiceClientManager.Client.Me.Calendars.GetAsync();
+        StringBuilder sb = new();
+        calendars.Value.Select(o => o.Name).ToList().ForEach(o => sb.Append(o + ","));
+        message = sb.ToString();
     }
 
+    private void OnDeviceCodeCallback(object sender, DevcieCodeCallbackEventArgs e)
+    {
+        Logger.LogInformation("callback");
+        //message = e.DeviceCodeInfo.Message;
+        // bool? result = await DialogService.ShowMessageBox(
+        //     title: "Microsoft Login Required",
+        //     message: "You are required to login to a Microsoft account for this Add On to function.");
+
+
+
+    }
+
+    void IDisposable.Dispose()
+    {
+        GraphServiceClientManager.OnDeviceCodeCallback -= OnDeviceCodeCallback;
+    }
 }

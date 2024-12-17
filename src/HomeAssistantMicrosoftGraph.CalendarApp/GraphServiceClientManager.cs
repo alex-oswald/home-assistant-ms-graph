@@ -1,0 +1,155 @@
+﻿using Azure.Core;
+using Azure.Identity;
+using Microsoft.Extensions.Options;
+using Microsoft.Graph;
+
+namespace HomeAssistantMicrosoftGraph.CalendarApp;
+
+public class AuthenticatedGraphServiceClient
+{
+    private readonly ILogger<AuthenticatedGraphServiceClient> _logger;
+
+    public AuthenticatedGraphServiceClient(
+        ILogger<AuthenticatedGraphServiceClient> logger)
+    {
+        _logger = logger;
+    }
+}
+
+public class GraphServiceClientManagerOptions
+{
+    public const string Section = nameof(GraphServiceClientManager);
+    public string AuthenticationRecordDirectory { get; set; } = string.Empty;
+    public string AuthenticationRecordFileName { get; set; } = "authenticationRecord.txt";
+    public string EntraIdApplicationClientId { get; set; } = string.Empty;
+}
+
+public interface IGraphServiceClientManager
+{
+    event EventHandler<DevcieCodeCallbackEventArgs> OnDeviceCodeCallback;
+
+    GraphServiceClient Client { get; }
+}
+
+public class GraphServiceClientManager : IGraphServiceClientManager
+{
+    private readonly ILogger<GraphServiceClientManager> _logger;
+    private readonly GraphServiceClientManagerOptions _options;
+    private readonly string _authenticationRecordFullPath;
+    private GraphServiceClient _client;
+
+    public GraphServiceClientManager(
+        ILogger<GraphServiceClientManager> logger,
+        IOptions<GraphServiceClientManagerOptions> options)
+    {
+        _logger = logger;
+        _options = options.Value;
+        _authenticationRecordFullPath = Path.Combine(_options.AuthenticationRecordDirectory, _options.AuthenticationRecordFileName);
+    }
+
+    public event EventHandler<DevcieCodeCallbackEventArgs> OnDeviceCodeCallback;
+
+    public GraphServiceClient Client
+    {
+        get
+        {
+            if (_client is null)
+            {
+                _client = GetClientAsync(CancellationToken.None).GetAwaiter().GetResult();
+            }
+            return _client!;
+        }
+        private set => _client = value;
+    }
+
+    private async Task<GraphServiceClient> GetClientAsync(CancellationToken cancellationToken)
+    {
+        var scopes = new[] { "User.Read", "Calendars.Read" };
+        var tenantId = "common";
+
+        AuthenticationRecord? currentAuthenticationRecord = await ReadPersistedAuthenticationRecordAsync(cancellationToken).ConfigureAwait(false);
+        var options = new DeviceCodeCredentialOptions
+        {
+            AuthorityHost = AzureAuthorityHosts.AzurePublicCloud,
+            ClientId = _options.EntraIdApplicationClientId,
+            TenantId = tenantId,
+            // Callback delegate that receives the device code details
+            DeviceCodeCallback = DeviceCodeCallback,
+        };
+
+        var deviceCodeCredential = new DeviceCodeCredential(options);
+
+        if (currentAuthenticationRecord is not null)
+        {
+            options.AuthenticationRecord = currentAuthenticationRecord;
+            options.TokenCachePersistenceOptions = TokenCachePersistenceOptions;
+        }
+        else
+        {
+            var newAuthenticationRecord = await deviceCodeCredential.AuthenticateAsync(
+                new TokenRequestContext(scopes), cancellationToken).ConfigureAwait(false);
+            await PersistAuthenticationRecordAsync(newAuthenticationRecord, cancellationToken).ConfigureAwait(false);
+        }
+
+        var graphClient = new GraphServiceClient(deviceCodeCredential);
+        return graphClient;
+    }
+
+    private Task DeviceCodeCallback(DeviceCodeInfo code, CancellationToken cancellationToken)
+    {
+        _logger.LogInformation("Device code callback received");
+        OnDeviceCodeCallback.Invoke(this, new DevcieCodeCallbackEventArgs { DeviceCodeInfo = code });
+        _logger.LogInformation(code.Message);
+        return Task.CompletedTask;
+    }
+
+    private async Task PersistAuthenticationRecordAsync(AuthenticationRecord authenticationRecord, CancellationToken cancellationToken)
+    {
+        _logger.LogTrace("Saving the authentication record file '{path}'", _authenticationRecordFullPath);
+        using var stream = new FileStream(_authenticationRecordFullPath, FileMode.Create, FileAccess.Write);
+        await authenticationRecord.SerializeAsync(stream, cancellationToken).ConfigureAwait(false);
+    }
+    
+    private async Task<AuthenticationRecord?> ReadPersistedAuthenticationRecordAsync(CancellationToken cancellationToken)
+    {
+        _logger.LogTrace("Checking to see if authentication record file '{path}' exists", _authenticationRecordFullPath);
+        if (!File.Exists(_authenticationRecordFullPath))
+        {
+            _logger.LogDebug("Authentication record file '{path}' does not exist", _authenticationRecordFullPath);
+            return null;
+        }
+
+        try
+        {
+            _logger.LogTrace("Attempting to read authentication record file '{path}'", _authenticationRecordFullPath);
+            using var stream = new FileStream(_authenticationRecordFullPath, FileMode.Open, FileAccess.Read);
+            var record = await AuthenticationRecord.DeserializeAsync(stream, cancellationToken).ConfigureAwait(false);
+            return record;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error reading the authentication record");
+            return null;
+        }
+    }
+
+    private static TokenCachePersistenceOptions TokenCachePersistenceOptions = new()
+    {
+        Name = "home-assistant-m365",
+        UnsafeAllowUnencryptedStorage = true,
+    };
+}
+
+public class DevcieCodeCallbackEventArgs : EventArgs
+{
+    public DeviceCodeInfo DeviceCodeInfo { get; set; }
+}
+
+public static class GraphServiceClientFactoryExtensions
+{
+    public static IServiceCollection AddGraphServiceClient(this IServiceCollection services)
+    {
+        services.AddSingleton<IGraphServiceClientManager, GraphServiceClientManager>();
+        return services;
+    }
+}
