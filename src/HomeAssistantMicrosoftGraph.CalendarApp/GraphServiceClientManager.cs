@@ -5,28 +5,9 @@ using Microsoft.Graph;
 
 namespace HomeAssistantMicrosoftGraph.CalendarApp;
 
-public class AuthenticatedGraphServiceClient
-{
-    private readonly ILogger<AuthenticatedGraphServiceClient> _logger;
-
-    public AuthenticatedGraphServiceClient(
-        ILogger<AuthenticatedGraphServiceClient> logger)
-    {
-        _logger = logger;
-    }
-}
-
-public class GraphServiceClientManagerOptions
-{
-    public const string Section = nameof(GraphServiceClientManager);
-    public string AuthenticationRecordDirectory { get; set; } = string.Empty;
-    public string AuthenticationRecordFileName { get; set; } = "authenticationRecord.txt";
-    public string EntraIdApplicationClientId { get; set; } = string.Empty;
-}
-
 public interface IGraphServiceClientManager
 {
-    event EventHandler<DevcieCodeCallbackEventArgs> OnDeviceCodeCallback;
+    event EventHandler<DeviceCodeCallbackEventArgs> OnDeviceCodeCallback;
 
     GraphServiceClient Client { get; }
 }
@@ -47,7 +28,7 @@ public class GraphServiceClientManager : IGraphServiceClientManager
         _authenticationRecordFullPath = Path.Combine(_options.AuthenticationRecordDirectory, _options.AuthenticationRecordFileName);
     }
 
-    public event EventHandler<DevcieCodeCallbackEventArgs> OnDeviceCodeCallback;
+    public event EventHandler<DeviceCodeCallbackEventArgs> OnDeviceCodeCallback;
 
     public GraphServiceClient Client
     {
@@ -95,7 +76,7 @@ public class GraphServiceClientManager : IGraphServiceClientManager
     private Task DeviceCodeCallback(DeviceCodeInfo code, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Device code callback received");
-        OnDeviceCodeCallback.Invoke(this, new DevcieCodeCallbackEventArgs { DeviceCodeInfo = code });
+        OnDeviceCodeCallback.Invoke(this, new DeviceCodeCallbackEventArgs { DeviceCodeInfo = code });
         _logger.LogInformation(code.Message);
         return Task.CompletedTask;
     }
@@ -130,14 +111,23 @@ public class GraphServiceClientManager : IGraphServiceClientManager
         }
     }
 
-    private static TokenCachePersistenceOptions TokenCachePersistenceOptions = new()
+    private readonly static TokenCachePersistenceOptions TokenCachePersistenceOptions = new()
     {
         Name = "home-assistant-m365",
         UnsafeAllowUnencryptedStorage = true,
     };
 }
 
-public class DevcieCodeCallbackEventArgs : EventArgs
+
+public class GraphServiceClientManagerOptions
+{
+    public const string Section = nameof(GraphServiceClientManager);
+    public string AuthenticationRecordDirectory { get; set; } = string.Empty;
+    public string AuthenticationRecordFileName { get; set; } = "authenticationRecord.txt";
+    public string EntraIdApplicationClientId { get; set; } = string.Empty;
+}
+
+public class DeviceCodeCallbackEventArgs : EventArgs
 {
     public DeviceCodeInfo DeviceCodeInfo { get; set; }
 }

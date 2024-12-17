@@ -32,13 +32,17 @@
         message = sb.ToString();
     }
 
-    private void OnDeviceCodeCallback(object sender, DevcieCodeCallbackEventArgs e)
+    private async void OnDeviceCodeCallback(object sender, DeviceCodeCallbackEventArgs e)
     {
         Logger.LogInformation("callback");
-        //message = e.DeviceCodeInfo.Message;
-        // bool? result = await DialogService.ShowMessageBox(
-        //     title: "Microsoft Login Required",
-        //     message: "You are required to login to a Microsoft account for this Add On to function.");
+        // message = e.DeviceCodeInfo.Message;
+        // await InvokeAsync(async () =>
+        // {
+        //     bool? result = await DialogService.ShowMessageBox(
+        //         title: "Microsoft Login Required",
+        //         message: "You are required to login to a Microsoft account for this Add On to function.");
+        // });
+
 
 
 
