@@ -28,31 +28,28 @@
     {
         if (firstRender)
         {
-            Logger.LogInformation("OnAfterRender first render");
-        }
-        else
-        {
-            Logger.LogInformation("OnAfterRender not first");
-        }
+            Logger.LogInformation("First render");
 
-        Logger.LogInformation("init");
-        GraphServiceClientManager.OnDeviceCodeCallback += OnDeviceCodeCallback;
 
-        await Task.Run(async () =>
-        {
-            Logger.LogInformation("Getting calendars");
-            User? me = await GraphServiceClientManager.Client.Me.GetAsync();
-            name = me.DisplayName;
-            CalendarCollectionResponse? calendars = await GraphServiceClientManager.Client.Me.Calendars.GetAsync();
-            foreach (var item in calendars?.Value?.Select(o => o.Name).ToList() ?? [])
+            Logger.LogInformation("init");
+            GraphServiceClientManager.OnDeviceCodeCallback += OnDeviceCodeCallback;
+
+            await Task.Run(async () =>
             {
-                if (!string.IsNullOrWhiteSpace(item))
+                User? me = await GraphServiceClientManager.Client.Me.GetAsync();
+                name = me.DisplayName;
+                CalendarCollectionResponse? calendars = await GraphServiceClientManager.Client.Me.Calendars.GetAsync();
+                foreach (var item in calendars?.Value?.Select(o => o.Name).ToList() ?? [])
                 {
-                    calendarNames.Add(item);
+                    if (!string.IsNullOrWhiteSpace(item))
+                    {
+                        calendarNames.Add(item);
+                    }
                 }
-            }
-        });
 
+                await InvokeAsync(StateHasChanged);
+            });
+        }
     }
 
     private Task ShowAuthDialog(DeviceCodeInfo deviceCodeInfo)
