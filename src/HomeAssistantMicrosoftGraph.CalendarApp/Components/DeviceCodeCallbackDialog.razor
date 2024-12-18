@@ -1,0 +1,39 @@
+﻿@using Azure.Identity
+<MudDialog>
+    <TitleContent>
+        Authentication Required
+    </TitleContent>
+    <DialogContent>
+        @MessageBeforeLink() <MudLink Target="_blank" Href="@DeviceCodeInfo.VerificationUri.ToString()">@DeviceCodeInfo.VerificationUri.ToString()</MudLink> @MessageAfterLink()
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit">Ok</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private MudDialogInstance MudDialog { get; set; }
+
+    [Parameter]
+    public DeviceCodeInfo DeviceCodeInfo { get; set; }
+
+    private void Submit() => MudDialog.Close(DialogResult.Ok(true));
+
+    private void Cancel() => MudDialog.Cancel();
+
+    private string MessageBeforeLink()
+    {
+        var url = DeviceCodeInfo.VerificationUri.ToString();
+        var before = DeviceCodeInfo.Message.Substring(0, DeviceCodeInfo.Message.IndexOf(url));
+        return before;
+    }
+
+    private string MessageAfterLink()
+    {
+        var url = DeviceCodeInfo.VerificationUri.ToString();
+        var after = DeviceCodeInfo.Message.Substring(DeviceCodeInfo.Message.IndexOf(url) + url.Length);
+        return after;
+    }
+}

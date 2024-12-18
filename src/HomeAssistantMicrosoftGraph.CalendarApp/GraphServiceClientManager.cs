@@ -9,6 +9,8 @@ public interface IGraphServiceClientManager
 {
     event EventHandler<DeviceCodeCallbackEventArgs> OnDeviceCodeCallback;
 
+    //event EventHandler<AuthenticationStateChangeEventArgs> OnAuthenticationStateChanged;
+
     GraphServiceClient Client { get; }
 }
 
@@ -30,14 +32,13 @@ public class GraphServiceClientManager : IGraphServiceClientManager
 
     public event EventHandler<DeviceCodeCallbackEventArgs> OnDeviceCodeCallback;
 
+    //public event EventHandler<AuthenticationStateChangeEventArgs> OnAuthenticationStateChanged;
+
     public GraphServiceClient Client
     {
         get
         {
-            if (_client is null)
-            {
-                _client = GetClientAsync(CancellationToken.None).GetAwaiter().GetResult();
-            }
+            _client ??= GetClientAsync(CancellationToken.None).GetAwaiter().GetResult();
             return _client!;
         }
         private set => _client = value;
@@ -130,6 +131,11 @@ public class GraphServiceClientManagerOptions
 public class DeviceCodeCallbackEventArgs : EventArgs
 {
     public DeviceCodeInfo DeviceCodeInfo { get; set; }
+}
+
+public class AuthenticationStateChangeEventArgs : EventArgs
+{
+    public bool Authenticated { get; set; }
 }
 
 public static class GraphServiceClientFactoryExtensions

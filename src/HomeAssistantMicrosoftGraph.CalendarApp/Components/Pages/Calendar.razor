@@ -1,51 +1,83 @@
 ﻿@page "/calendar"
 @using System.Text
-@attribute [StreamRendering]
+@using Azure.Identity
+@using Microsoft.Graph.Models
 @implements IDisposable
 @inject IGraphServiceClientManager GraphServiceClientManager
 @inject ILogger<Calendar> Logger
+@inject IDialogService DialogService
 
 <PageTitle>Calendar</PageTitle>
 
-<h1>Calendar - @name</h1>
+<h1>Calendars - @name</h1>
 
-<h4>@message</h4>
+<ul>
+    @foreach (var name in calendarNames)
+    {
+        <li>@name</li>
+    }
+</ul>
+
+<MudButton OnClick="@(async () => await ShowAuthDialog(new DeviceCodeInfo()))"></MudButton>
 
 @code {
     private string name = "empty";
-    private string message = string.Empty;
+    private List<string> calendarNames = [];
 
-    [Inject] private IDialogService DialogService { get; set; }
-
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        base.OnInitialized();
+        if (firstRender)
+        {
+            Logger.LogInformation("OnAfterRender first render");
+        }
+        else
+        {
+            Logger.LogInformation("OnAfterRender not first");
+        }
 
         Logger.LogInformation("init");
         GraphServiceClientManager.OnDeviceCodeCallback += OnDeviceCodeCallback;
 
-        var me = await GraphServiceClientManager.Client.Me.GetAsync();
-        name = me.DisplayName;
-        var calendars = await GraphServiceClientManager.Client.Me.Calendars.GetAsync();
-        StringBuilder sb = new();
-        calendars.Value.Select(o => o.Name).ToList().ForEach(o => sb.Append(o + ","));
-        message = sb.ToString();
+        await Task.Run(async () =>
+        {
+            Logger.LogInformation("Getting calendars");
+            User? me = await GraphServiceClientManager.Client.Me.GetAsync();
+            name = me.DisplayName;
+            CalendarCollectionResponse? calendars = await GraphServiceClientManager.Client.Me.Calendars.GetAsync();
+            foreach (var item in calendars?.Value?.Select(o => o.Name).ToList() ?? [])
+            {
+                if (!string.IsNullOrWhiteSpace(item))
+                {
+                    calendarNames.Add(item);
+                }
+            }
+        });
+
+    }
+
+    private Task ShowAuthDialog(DeviceCodeInfo deviceCodeInfo)
+    {
+        Logger.LogInformation("Show auth dialog");
+
+        var parameters = new DialogParameters<DeviceCodeCallbackDialog>
+        {
+            { x => x.DeviceCodeInfo, deviceCodeInfo },
+        };
+
+        var options = new DialogOptions
+        {
+            CloseButton = false,
+            CloseOnEscapeKey = false,
+            FullScreen = true,
+        };
+
+        return DialogService.ShowAsync<DeviceCodeCallbackDialog>("Authentication Required", parameters, options);
     }
 
     private async void OnDeviceCodeCallback(object sender, DeviceCodeCallbackEventArgs e)
     {
-        Logger.LogInformation("callback");
-        // message = e.DeviceCodeInfo.Message;
-        // await InvokeAsync(async () =>
-        // {
-        //     bool? result = await DialogService.ShowMessageBox(
-        //         title: "Microsoft Login Required",
-        //         message: "You are required to login to a Microsoft account for this Add On to function.");
-        // });
-
-
-
-
+        Logger.LogInformation("Device code callback");
+        await ShowAuthDialog(e.DeviceCodeInfo);
     }
 
     void IDisposable.Dispose()
