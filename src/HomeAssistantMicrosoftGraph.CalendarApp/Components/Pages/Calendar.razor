@@ -1,4 +1,4 @@
-﻿@page "/calendar"
+﻿@page "/"
 @using System.Text
 @using Azure.Identity
 @using Microsoft.Graph.Models
@@ -8,6 +8,8 @@
 @inject IDialogService DialogService
 
 <PageTitle>Calendar</PageTitle>
+
+
 
 <h1>Calendars - @name</h1>
 
@@ -21,7 +23,7 @@
 <MudButton OnClick="@(async () => await ShowAuthDialog(new DeviceCodeInfo()))"></MudButton>
 
 @code {
-    private string name = "empty";
+    private string name = string.Empty;
     private List<string> calendarNames = [];
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -29,7 +31,6 @@
         if (firstRender)
         {
             Logger.LogInformation("First render");
-
 
             Logger.LogInformation("init");
             GraphServiceClientManager.OnDeviceCodeCallback += OnDeviceCodeCallback;
